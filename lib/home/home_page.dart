@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as flutterProvider; // توجيه لمكتبة provider الخاصة بـ Flutter
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'home_page_content.dart';
 import '../theme.dart';
 import '../settings/settings_page.dart';
@@ -17,6 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 2;
+  List<dynamic> _contentData = []; // قائمة لتخزين البيانات
 
   static final List<Widget> _pages = <Widget>[
     EducationPage(),
@@ -25,6 +27,29 @@ class _HomePageState extends State<HomePage> {
     ProductsPage(),
     ClinicsPage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchContent(); // جلب البيانات عند تهيئة الصفحة
+  }
+
+  Future<void> _fetchContent() async {
+    final response = await Supabase.instance.client
+        .from('your_table_name') // استبدل your_table_name باسم الجدول الخاص بك
+        .select()
+        .order('created_at', ascending: false)
+        .execute();
+
+    if (response.error == null && response.data != null) {
+      setState(() {
+        _contentData = response.data as List<dynamic>;
+      });
+    } else {
+      // تجنب استخدام print في بيئة الإنتاج
+      debugPrint('Error fetching data: ${response.error?.message}');
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -53,18 +78,19 @@ class _HomePageState extends State<HomePage> {
               // تفعيل الإشعارات
             },
           ),
-          // زر الوضع الليلي
           IconButton(
-            icon: const Icon(Icons.brightness_high_sharp), // يمكن تغيير الأيقونة إذا كنت تستخدم أيقونة أخرى
+            icon: const Icon(Icons.brightness_high_sharp),
             onPressed: () {
-              Provider.of<ThemeProvider>(context, listen: false).toggleDarkMode(
-                  !Provider.of<ThemeProvider>(context, listen: false).isDarkMode());
+              flutterProvider.Provider.of<ThemeProvider>(context, listen: false).toggleDarkMode(
+                  !flutterProvider.Provider.of<ThemeProvider>(context, listen: false).isDarkMode());
             },
           ),
         ],
       ),
       body: Center(
-        child: _pages.elementAt(_selectedIndex),
+        child: _selectedIndex == 2
+            ? _buildContentList() // عرض المحتوى إذا كانت الصفحة الرئيسية محددة
+            : _pages.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -85,7 +111,7 @@ class _HomePageState extends State<HomePage> {
             label: 'المنتجات',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.verified_user, size: 30), // تغيير الأيقونة
+            icon: Icon(Icons.verified_user, size: 30),
             label: 'العيادات',
           ),
         ],
@@ -96,19 +122,21 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
 
-class PlaceholderWidget extends StatelessWidget {
-  final String text;
-  const PlaceholderWidget(this.text);
+  Widget _buildContentList() {
+    if (_contentData.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        text,
-        style: TextStyle(color: Theme.of(context).primaryColor),
-      ),
+    return ListView.builder(
+      itemCount: _contentData.length,
+      itemBuilder: (context, index) {
+        final item = _contentData[index];
+        return ListTile(
+          title: Text(item['title']), // افترض أن لديك عمود 'title' في جدولك
+          subtitle: Text(item['description']), // افترض أن لديك عمود 'description'
+        );
+      },
     );
   }
 }

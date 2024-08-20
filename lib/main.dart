@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // إضافة مكتبة Supabase
 import 'pages/welcome_page.dart';
 import 'home/home_page.dart';
 import 'settings/settings_page.dart';
@@ -10,16 +10,16 @@ import 'theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // تهيئة Supabase
+  // تهيئة Supabase باستخدام URL والمفتاح العام الذي قدمته
   await Supabase.initialize(
-    url: 'https://your-supabase-url.supabase.co', // ضع هنا رابط مشروع Supabase الخاص بك
-    anonKey: 'your-anon-key', // ضع هنا المفتاح العام (anonKey) لمشروع Supabase
+    url: 'https://yhgmzwyzwontrjeurshc.supabase.co', // عنوان URL لمشروعك
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloZ216d3l6d29udHJqZXVyc2hjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQxNzkwMjksImV4cCI6MjAzOTc1NTAyOX0.tnP7wCC40pVD_eEWY889tOblvzYK9gBD7ia7Jp9-BI4',
   );
 
   // تهيئة Sentry
   await SentryFlutter.init(
         (options) {
-      options.dsn = 'YOUR_DSN_URL'; // ضع هنا DSN الخاص بـ Sentry
+      options.dsn = 'YOUR_DSN_URL'; // ضع هنا DSN الخاص بـ Sentry إذا كان لديك
     },
     appRunner: () => runApp(MyApp()),
   );
